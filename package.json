@@ -9,13 +9,22 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:cpp"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "ros2helper.helloWorld",
         "title": "Hello World"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "ros2helper.helloWorld",
+        "key": "ctrl+alt+h",
+        "when": "editorTextFocus"
       }
     ]
   },
