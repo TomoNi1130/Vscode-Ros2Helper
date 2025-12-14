@@ -21,7 +21,11 @@
       },
       {
         "command": "ros2helper.colconBuild",
-        "title": "Colon Build"
+        "title": "Colcon Build all packages"
+      },
+      {
+        "command": "ros2helper.specificColonBuild",
+        "title": "Colcon build this package"
       },
       {
         "command": "ros2helper.launch",
@@ -37,14 +41,19 @@
       {
         "command": "ros2helper.colconBuild",
         "key": "ctrl+alt+b",
-        "when": "editorFocus"
+        "when": "true"
+      },
+      {
+        "command": "ros2helper.colconBuild",
+        "key": "ctrl+shift+b",
+        "when": "true"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "ros2helper.launch",
-          "when": "resourceExtname == .py || resourceExtname == .xml"
+          "command": "ros2helper.specificColonBuild",
+          "when": "explorerResourceIsFolder"
         }
       ]
     }

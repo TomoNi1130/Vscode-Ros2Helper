@@ -1,7 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { logInfo,logWarn,logError,showLogChannel } from './logger';
+import * as fs from "fs";
+import * as path from "path";
+import { logInfo, logWarn, logError, showLogChannel } from './logger';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -11,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	showLogChannel();
-    logInfo('ros2helper が 有効化されました。', 'extension');
+	logInfo('ros2helper が 有効化されました。', 'extension');
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
@@ -23,11 +25,12 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		vscode.window.showInformationMessage('Hello World from ros2-helper!');//右下から出てくる.
 	});
 
-	const colcon_disposable = vscode.commands.registerCommand('ros2helper.colconBuild',() => {//ワークスペース全体のcolconビルド
-		logInfo('ワークスペース全体に対する Colcon Build コマンドが実行されました.','command');
+	const colcon_disposable = vscode.commands.registerCommand('ros2helper.colconBuild', () => {//ワークスペース全体のcolconビルド
+		logInfo('ワークスペース全体に対する Colcon Build コマンドが実行されました.', 'command');
 		// ワークスペースのルートディレクトリを取得
 		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 		if (!workspaceFolder) {
+			logWarn("ワークスペースが開かれていません", "command");
 			vscode.window.showErrorMessage('ワークスペースが開かれていません。');
 			return;
 		}
@@ -38,24 +41,46 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		terminal.sendText(`cd "${workspaceFolder.uri.fsPath}" && colcon build; exit`);
 	});
 
-	const specific_colocn_disposable = vscode.commands.registerCommand('ros2helper.specificColonBuild',(uri:vscode.Uri) => {
-		logInfo(`パス:"${uri}"に対する Colon Build コマンドが実行されました`,'command');
+	const specific_colocn_disposable = vscode.commands.registerCommand('ros2helper.specificColonBuild', (uri: vscode.Uri) => {
+		logInfo(`パス:${uri}に対して Colon Build コマンドが実行されました`, 'command');
+		const packageName = path.basename(uri.fsPath);
+		//camke,package.xmlがあるかどうか調べる
+		let targetPath = uri.fsPath;
+		const cmakePath = path.join(targetPath, "CMakeLists.txt");
+		const packageXmlPath = path.join(targetPath, "package.xml");
+		if (fs.existsSync(cmakePath) && fs.existsSync(packageXmlPath)) {
+			// ワークスペースのルートディレクトリを取得
+			const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+			if (!workspaceFolder) {
+				logWarn("ワークスペースが開かれていません", "command");
+				vscode.window.showErrorMessage('ワークスペースが開かれていません。');
+				return;
+			}
+			const terminal = vscode.window.createTerminal('Specific colcon build');
+			terminal.show();
+			terminal.sendText(`cd "${workspaceFolder.uri.fsPath}" && colcon build --packages-select ${packageName}; exit`);
+		} else {
+			logWarn(`CMake,package.xmlが見つかりませんでした`, 'command');
+			vscode.window.showWarningMessage('パッケージを選択してください');
+		}
 	});
 
-	const launch_disposable = vscode.commands.registerCommand('ros2helper.launch',(uri: vscode.Uri) => {//特定ファイルのlaunchコマンド //uriは選択されたファイルのパス
-		logInfo('Launch コマンドが実行されました','command');
+	const launch_disposable = vscode.commands.registerCommand('ros2helper.launch', (uri: vscode.Uri) => {//特定ファイルのlaunchコマンド //uriは選択されたファイルのパス
+		logInfo(`パス:${uri}に対して Launch コマンドが実行されました','command`);
 		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 		if (!workspaceFolder) {
+			logWarn("ワークスペースが開かれていません", "command");
 			vscode.window.showErrorMessage('ワークスペースが開かれていません。');
 			return;
 		}
 		//選択されたファイルをlaunchで起動
 		const path = uri.fsPath;
-      	vscode.window.showInformationMessage(path);
+		vscode.window.showInformationMessage(path);
 	});
 
 	context.subscriptions.push(test_disposable);
 	context.subscriptions.push(colcon_disposable);
+	context.subscriptions.push(specific_colocn_disposable);
 	context.subscriptions.push(launch_disposable);
 	//↑拡張機能が無効化されたときに自動で解除するために管理リストへ登録
 }
