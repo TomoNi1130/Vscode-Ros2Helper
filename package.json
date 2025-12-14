@@ -18,6 +18,14 @@
       {
         "command": "ros2helper.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "ros2helper.colconBuild",
+        "title": "Colon Build"
+      },
+      {
+        "command": "ros2helper.launch",
+        "title": "Launch this file"
       }
     ],
     "keybindings": [
@@ -25,12 +33,17 @@
         "command": "ros2helper.helloWorld",
         "key": "ctrl+alt+h",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "ros2helper.colconBuild",
+        "key": "ctrl+alt+b",
+        "when": "editorFocus"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "ros2helper.helloWorld",
+          "command": "ros2helper.launch",
           "when": "resourceExtname == .py || resourceExtname == .xml"
         }
       ]
