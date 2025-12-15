@@ -30,6 +30,10 @@
       {
         "command": "ros2helper.launch",
         "title": "Launch this file"
+      },
+      {
+        "command": "ros2helper.pythonTest",
+        "title": "Python test"
       }
     ],
     "keybindings": [
@@ -46,6 +50,11 @@
       {
         "command": "ros2helper.colconBuild",
         "key": "ctrl+shift+b",
+        "when": "true"
+      },
+      {
+        "command": "ros2helper.pythonTest",
+        "key": "ctrl+shift+p",
         "when": "true"
       }
     ],

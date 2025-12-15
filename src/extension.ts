@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import * as fs from "fs";
 import * as path from "path";
+import { execFile } from "child_process";
 import { logInfo, logWarn, logError, showLogChannel } from './logger';
 
 // This method is called when your extension is activated
@@ -43,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 
 	const specific_colocn_disposable = vscode.commands.registerCommand('ros2helper.specificColonBuild', (uri: vscode.Uri) => {
 		logInfo(`パス:${uri}に対して Colon Build コマンドが実行されました`, 'command');
-		const packageName = path.basename(uri.fsPath);
+		const packageName: string = path.basename(uri.fsPath);
 		//camke,package.xmlがあるかどうか調べる
 		let targetPath = uri.fsPath;
 		const cmakePath = path.join(targetPath, "CMakeLists.txt");
@@ -65,7 +66,9 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		}
 	});
 
-	const launch_disposable = vscode.commands.registerCommand('ros2helper.launch', (uri: vscode.Uri) => {//特定ファイルのlaunchコマンド //uriは選択されたファイルのパス
+	const launch_disposable = vscode.commands.registerCommand('ros2helper.launch', (uri: vscode.Uri) => {
+		//特定ファイルのlaunchコマンド //uriは選択されたファイルのパス
+		// const LaunchFineName: string = path.basename(uri.fsPath);
 		logInfo(`パス:${uri}に対して Launch コマンドが実行されました','command`);
 		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 		if (!workspaceFolder) {
@@ -78,10 +81,23 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		vscode.window.showInformationMessage(path);
 	});
 
+	const python_test = vscode.commands.registerCommand('ros2helper.pythonTest', () => {//pythonの起動
+		const test_msg = { msg: "パンナコッタ" };
+		const pythonPath: string = path.join(__dirname, '..', 'python_file', 'log_maker.py');
+		execFile("python3", [pythonPath, JSON.stringify(test_msg)], (err, stdout, stderr) => {
+			if (err) {
+				logError(`python error ${err}`, 'python');
+			} else if (stdout || stderr) {
+				logInfo('正常に終了', 'python');
+			}
+		});
+	});
+
 	context.subscriptions.push(test_disposable);
 	context.subscriptions.push(colcon_disposable);
 	context.subscriptions.push(specific_colocn_disposable);
 	context.subscriptions.push(launch_disposable);
+	context.subscriptions.push(python_test);
 	//↑拡張機能が無効化されたときに自動で解除するために管理リストへ登録
 }
 
