@@ -87,8 +87,11 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		execFile("python3", [pythonPath, JSON.stringify(test_msg)], (err, stdout, stderr) => {
 			if (err) {
 				logError(`python error ${err}`, 'python');
-			} else if (stdout || stderr) {
+			} else if (stderr) {
 				logInfo('正常に終了', 'python');
+			} else if (stdout) {
+				const result = JSON.parse(stdout);
+				logInfo(`返信を受信 msg ${result.recall}`, `python`);
 			}
 		});
 	});

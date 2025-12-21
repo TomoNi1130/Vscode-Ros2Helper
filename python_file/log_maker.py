@@ -14,4 +14,8 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
+print(json.dumps({
+    "recall":"パイナップル"
+}))
+
 logging.info(f'プログラムが起動しました:msg -> {input_data["msg"]}')
