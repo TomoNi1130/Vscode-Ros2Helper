@@ -9,15 +9,27 @@ import { logInfo, logWarn, logError, showLogChannel } from './logger';
 //JSON-RPCっていうらしい
 //サブプロセスとしてpythonを起動
 
+type Resolver = (data: any) => void;
+const pending = new Map<number, Resolver>();
+let LatestID = 0;
+
 function handleMessage(msg: any) {
 	switch (msg.type) {
 		case "response":
-			if (msg.id == "1") {
-
+			const resolve = pending.get(msg.id);
+			if (resolve) {
+				resolve(msg.data);
+				pending.delete(msg.id);
 			}
 			break;
+		case "event":
+			logInfo("event", "python callback");
+			break;
+		case "error":
+			logError("error", "python callback");
+			break;
 		default:
-			console.warn("Unknown message", msg);
+			logError("Unknown message", "python callback");
 	}
 }
 
@@ -49,9 +61,20 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 	py.on('error', (err) => {
 		logError(`Python process error: ${err.message}`, 'extension');
 	});
+
 	showLogChannel();
 
 	logInfo('ros2helper が 有効化されました。', 'extension');
+
+	function send(cmd: any): Promise<any> {
+		const id = LatestID++;
+		cmd.id = id;
+
+		return new Promise((resolve) => {
+			pending.set(id, resolve);
+			py.stdin.write(JSON.stringify(cmd) + "\n");
+		});
+	}
 
 	const test_command = vscode.commands.registerCommand('ros2helper.testCommand', () => {
 		logInfo('Hello World コマンドが実行されました.', 'command');
