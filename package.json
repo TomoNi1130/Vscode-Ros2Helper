@@ -16,53 +16,16 @@
   "contributes": {
     "commands": [
       {
-        "command": "ros2helper.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "ros2helper.colconBuild",
-        "title": "Colcon Build all packages"
-      },
-      {
-        "command": "ros2helper.specificColonBuild",
-        "title": "Colcon build this package"
-      },
-      {
-        "command": "ros2helper.launch",
-        "title": "Launch this file"
-      },
-      {
-        "command": "ros2helper.pythonTest",
-        "title": "Python test"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "ros2helper.helloWorld",
-        "key": "ctrl+alt+h",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "ros2helper.colconBuild",
-        "key": "ctrl+alt+b",
-        "when": "true"
-      },
-      {
-        "command": "ros2helper.colconBuild",
-        "key": "ctrl+shift+b",
-        "when": "true"
-      },
-      {
-        "command": "ros2helper.pythonTest",
-        "key": "ctrl+shift+p",
-        "when": "true"
+        "command": "ros2helper.testCommand",
+        "title": "ROS2: Hello World"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "ros2helper.specificColonBuild",
-          "when": "explorerResourceIsFolder"
+          "command": "ros2helper.testCommand",
+          "when": "resourceFilename =~ /\\.launch\\.(py|xml|yml)$/",
+          "group": "ros2@1"
         }
       ]
     }

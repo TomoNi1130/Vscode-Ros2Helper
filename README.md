@@ -2,6 +2,12 @@
 
 This is the README for your extension "ros2helper". After writing up a brief description, we recommend including the following sections.
 
+1,ノード用のファイルを選択し,エクスプローラーからそのノードをビルド,実行することができる.
+2,1をパッケージ単位でも行うことができる.
+3,launchファイルを選択し,エクスプローラーからそのファイルを実行することができる
+4,コマンドラインの予測変換で現在ワークスペース内にあるノードやlaunchファイルの名前が予測変換で出てくる.
+5,上記のノードやlaunchファイルの実行の際には自動的にコマンドラインが開き,終了すると自動的に閉じるようにしたい.
+
 ## Features
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.

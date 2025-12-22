@@ -1,0 +1,22 @@
+import sys
+import json
+from pathlib import Path
+
+for line in sys.stdin:
+    req = json.loads(line)
+
+    if req["cmd"] == "list_dirs":
+        workspace = Path(req["path"])
+
+        # 直下の「フォルダのみ」を取得
+        dirs = [
+            p.name
+            for p in workspace.iterdir()
+            if p.is_dir()
+        ]
+
+        res = {
+            "dirs": dirs
+        }
+
+        print(json.dumps(res), flush=True)
