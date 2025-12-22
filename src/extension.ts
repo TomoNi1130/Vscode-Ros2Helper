@@ -9,19 +9,64 @@ import { logInfo, logWarn, logError, showLogChannel } from './logger';
 //JSON-RPCっていうらしい
 //サブプロセスとしてpythonを起動
 
-interface PythonResponse {
-	status: string;
-	logs: Array<{ level: string; message: string; source: string }>;
-	result: { [key: string]: any };
+function handleMessage(msg: any) {
+	switch (msg.type) {
+		case "response":
+			if (msg.id == "1") {
+
+			}
+			break;
+		default:
+			console.warn("Unknown message", msg);
+	}
 }
 
 export function activate(context: vscode.ExtensionContext) {//主要なエントリポイント
 	//すべての拡張機能のセットアップ、コマンド登録、イベントリスナーの購読はここでの実行。
+
+	const pyPath = path.join(//pythonファイルの場所を指定する
+		context.extensionPath,
+		"python_file",
+		"readup_ws.py"
+	);
+
+	const py = spawn("python3", [pyPath]);
+	let buffer: string = "";
+	if (py.stdout) {
+		py.stdout.on("data", (data) => {
+			buffer += data.toString();
+			const lines = buffer.split("\n");
+			buffer = lines.pop()!;
+			for (const line of lines) {
+				if (!line.trim()) continue;
+				const msg = JSON.parse(line);
+				logInfo("Folders: " + msg.dirs.join(", "), "python callback");
+			}
+		});
+	} else {
+		logError('Failed to start Python process: stdout is null', 'extension');
+	}
+	py.on('error', (err) => {
+		logError(`Python process error: ${err.message}`, 'extension');
+	});
 	showLogChannel();
+
 	logInfo('ros2helper が 有効化されました。', 'extension');
+
 	const test_command = vscode.commands.registerCommand('ros2helper.testCommand', () => {
 		logInfo('Hello World コマンドが実行されました.', 'command');
 		vscode.window.showInformationMessage('Hello World from ros2-helper!');//右下から出てくる.
+		const ws = vscode.workspace.workspaceFolders?.[0];
+		if (!ws) {
+			logError("No workspace open", 'test command');
+			return;
+		}
+		if (py.stdin) {
+			logInfo('pythonファイルを起動', 'test command');
+			py.stdin.write(JSON.stringify({ cmd: "list_dirs", path: ws.uri.fsPath }) + "\n");
+		} else {
+			logError("Python process stdin is not available", 'test command');
+		}
 	});
 
 	context.subscriptions.push(test_command);

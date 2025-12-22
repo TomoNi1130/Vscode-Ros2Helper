@@ -19,4 +19,5 @@ for line in sys.stdin:
             "dirs": dirs
         }
 
-        print(json.dumps(res), flush=True)
+        # print(json.dumps(res), flush=True)
+        print(json.dumps({"type": "response","id": req["id"],"data": {"dirs": dirs}}),flush=True)
