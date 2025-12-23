@@ -1,9 +1,11 @@
 from readup_ws import readup_ws
+from load_ws import load_ws
 
 #cmdからコマンドをせんたくする
 
 COMMAND_TABLE = {
     "list_dirs": readup_ws,
+    "load_ws": load_ws,
 }
 
 def dispatch(req: dict):

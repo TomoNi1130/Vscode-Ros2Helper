@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as path from "path";
 import { spawn } from "child_process";
 import { logInfo, logWarn, logError, showLogChannel } from './logger';
-import { WorkspaceStore, WorkspaceInfo } from "./db";
+import { WorkspaceResponse, PackageInfo } from "./db";
 
 //JSON-RPCっていうらしい
 //サブプロセスとしてpythonを起動
@@ -98,7 +98,38 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		);
 	});
 
+	const load_ws = vscode.commands.registerCommand('ros2helper.loadWorkspace', () => {
+		logInfo('Load WS コマンドが実行されました', 'command');
+		const ws = vscode.workspace.workspaceFolders?.[0];
+		if (!ws) {
+			logError("No workspace open", 'load_ws command');
+			return;
+		}
+
+		send({ cmd: "load_ws", path: ws.uri.fsPath },
+			(res: WorkspaceResponse) => {
+				const pkgCount = Object.keys(res.pkgs).length;
+				logInfo(`Loaded ${pkgCount} packages`, "python callback");
+
+				// 各パッケージの詳細情報をログ出力
+				for (const [pkgName, pkgInfo] of Object.entries(res.pkgs)) {
+					logInfo(`Package: ${pkgName}`, "python callback");
+					logInfo(`  Path: ${pkgInfo.path}`, "python callback");
+
+					if (pkgInfo.nodes.length > 0) {
+						logInfo(`  Nodes: ${pkgInfo.nodes.join(", ")}`, "python callback");
+					}
+
+					if (pkgInfo.launch_files.length > 0) {
+						logInfo(`  Launch files: ${pkgInfo.launch_files.join(", ")}`, "python callback");
+					}
+				}
+			}
+		);
+	});
+
 	context.subscriptions.push(test_command);
+	context.subscriptions.push(load_ws);
 }
 
 export function deactivate() {

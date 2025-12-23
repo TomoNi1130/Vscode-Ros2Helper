@@ -18,6 +18,10 @@
       {
         "command": "ros2helper.testCommand",
         "title": "ROS2: Hello World"
+      },
+      {
+        "command": "ros2helper.loadWorkspace",
+        "title": "ROS2: ReLoad WorkSpace"
       }
     ],
     "menus": {
