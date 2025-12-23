@@ -53,7 +53,6 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 				if (!line.trim()) continue;
 				const msg = JSON.parse(line);
 				handleMessage(msg);
-				// logInfo("Folders: " + msg.dirs.join(", "), "python callback");
 			}
 		});
 	} else {
@@ -67,12 +66,22 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 
 	logInfo('ros2helper が 有効化されました。', 'extension');
 
-	function send(cmd: any, onResponse: ResponseHandler): void {
-		const id = LatestID++;
-		cmd.id = id;
+	function send(cmd: any, onResponse: ResponseHandler, timeoutMs = 3000): void {
+		if (py.stdin) {
+			const id = LatestID++;
+			cmd.id = id;
 
-		pending.set(id, onResponse);
-		py.stdin.write(JSON.stringify(cmd) + "\n");
+			pending.set(id, onResponse);
+			py.stdin.write(JSON.stringify(cmd) + "\n");
+			setTimeout(() => {	//3秒のタイムアウト
+				if (pending.has(id)) {
+					pending.delete(id);
+					logWarn(`Response timeout: id=${id}`);
+				}
+			}, timeoutMs);
+		} else {
+			logError("Python process stdin is not available", 'test command');
+		}
 	}
 
 	const test_command = vscode.commands.registerCommand('ros2helper.testCommand', () => {
@@ -83,17 +92,10 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 			logError("No workspace open", 'test command');
 			return;
 		}
-		if (py.stdin) {
-			logInfo('pythonファイルを起動', 'test command');
-			send({ cmd: "list_dirs", path: ws.uri.fsPath },
-				(res) => {
-					logInfo("Folders: " + res.dirs.join(", "), "python callback");
-				}
-			);
-			// py.stdin.write(JSON.stringify({ cmd: "list_dirs", path: ws.uri.fsPath }) + "\n");
-		} else {
-			logError("Python process stdin is not available", 'test command');
-		}
+		//pythonへの処理要求 例としてlist_dirsコマンド
+		send({ cmd: "list_dirs", path: ws.uri.fsPath },
+			(res) => { logInfo("Folders: " + res.dirs.join(", "), "python callback"); }
+		);
 	});
 
 	context.subscriptions.push(test_command);

@@ -7,17 +7,12 @@ for line in sys.stdin:
 
     if req["cmd"] == "list_dirs":
         workspace = Path(req["path"])
-
         # 直下の「フォルダのみ」を取得
         dirs = [
             p.name
             for p in workspace.iterdir()
             if p.is_dir()
         ]
-
-        res = {
-            "dirs": dirs
-        }
-
+        res = {"dirs": dirs}
         # print(json.dumps(res), flush=True)
         print(json.dumps({"type": "response","id": req["id"],"data": {"dirs": dirs}}),flush=True)
