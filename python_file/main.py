@@ -2,6 +2,8 @@ import sys
 import json
 from dispatcher import dispatch
 
+#python側のIO処理のみを担当する
+
 for line in sys.stdin:
     req = json.loads(line)
 

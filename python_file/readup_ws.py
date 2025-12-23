@@ -1,11 +1,7 @@
-import sys
-import json
 from pathlib import Path
 
-# for line in sys.stdin:
-#     req = json.loads(line)
+#与えられたフォルダの直下にあるフォルダを調べて一覧を返す
 
-#     if req["cmd"] == "list_dirs":
 def readup_ws(req: dict):
     workspace = Path(req["path"])
     # 直下の「フォルダのみ」を取得
@@ -16,5 +12,3 @@ def readup_ws(req: dict):
     ]
     res = {"dirs": dirs}
     return res
-    # print(json.dumps(res), flush=True)
-    # print(json.dumps({"type": "response","id": req["id"],"data": {"dirs": dirs}}),flush=True)

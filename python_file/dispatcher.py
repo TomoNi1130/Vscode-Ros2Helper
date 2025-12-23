@@ -1,8 +1,9 @@
 from readup_ws import readup_ws
 
+#cmdからコマンドをせんたくする
+
 COMMAND_TABLE = {
     "list_dirs": readup_ws,
-    # "read_file": handle_read_file,
 }
 
 def dispatch(req: dict):
