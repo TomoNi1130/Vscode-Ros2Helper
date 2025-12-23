@@ -9,16 +9,16 @@ import { logInfo, logWarn, logError, showLogChannel } from './logger';
 //JSON-RPCっていうらしい
 //サブプロセスとしてpythonを起動
 
-type Resolver = (data: any) => void;
-const pending = new Map<number, Resolver>();
+type ResponseHandler = (res: any) => void;
+const pending = new Map<number, ResponseHandler>();
 let LatestID = 0;
 
 function handleMessage(msg: any) {
 	switch (msg.type) {
 		case "response":
-			const resolve = pending.get(msg.id);
-			if (resolve) {
-				resolve(msg.data);
+			const response_handler = pending.get(msg.id);
+			if (response_handler) {
+				response_handler(msg.data);
 				pending.delete(msg.id);
 			}
 			break;
@@ -52,7 +52,8 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 			for (const line of lines) {
 				if (!line.trim()) continue;
 				const msg = JSON.parse(line);
-				logInfo("Folders: " + msg.dirs.join(", "), "python callback");
+				handleMessage(msg);
+				// logInfo("Folders: " + msg.dirs.join(", "), "python callback");
 			}
 		});
 	} else {
@@ -66,14 +67,12 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 
 	logInfo('ros2helper が 有効化されました。', 'extension');
 
-	function send(cmd: any): Promise<any> {
+	function send(cmd: any, onResponse: ResponseHandler): void {
 		const id = LatestID++;
 		cmd.id = id;
 
-		return new Promise((resolve) => {
-			pending.set(id, resolve);
-			py.stdin.write(JSON.stringify(cmd) + "\n");
-		});
+		pending.set(id, onResponse);
+		py.stdin.write(JSON.stringify(cmd) + "\n");
 	}
 
 	const test_command = vscode.commands.registerCommand('ros2helper.testCommand', () => {
@@ -86,7 +85,12 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		}
 		if (py.stdin) {
 			logInfo('pythonファイルを起動', 'test command');
-			py.stdin.write(JSON.stringify({ cmd: "list_dirs", path: ws.uri.fsPath }) + "\n");
+			send({ cmd: "list_dirs", path: ws.uri.fsPath },
+				(res) => {
+					logInfo("Folders: " + res.dirs.join(", "), "python callback");
+				}
+			);
+			// py.stdin.write(JSON.stringify({ cmd: "list_dirs", path: ws.uri.fsPath }) + "\n");
 		} else {
 			logError("Python process stdin is not available", 'test command');
 		}
