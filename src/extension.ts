@@ -1,10 +1,10 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as fs from "fs";
 import * as path from "path";
-import { execFile, spawn } from "child_process";
+import { spawn } from "child_process";
 import { logInfo, logWarn, logError, showLogChannel } from './logger';
+import { WorkspaceStore, WorkspaceInfo } from "./db";
 
 //JSON-RPCっていうらしい
 //サブプロセスとしてpythonを起動
