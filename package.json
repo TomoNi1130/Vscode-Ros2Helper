@@ -22,6 +22,10 @@
       {
         "command": "ros2helper.loadWorkspace",
         "title": "ROS2: ReLoad WorkSpace"
+      },
+      {
+        "command": "ros2helper.showWSinfo",
+        "title": "ROS2: Show WorkSpace Info"
       }
     ],
     "menus": {

@@ -76,18 +76,3 @@ def load_ws(req: dict):
     
     # TypeScript側にも返す
     return workspace_data
-
-def get_workspace(req: dict):
-    """Python側に保存されたワークスペース情報を取得"""
-    return workspace_data
-
-def get_package(req: dict):
-    """特定のパッケージ情報を取得"""
-    pkg_name = req.get("pkg_name")
-    if pkg_name in workspace_data["pkgs"]:
-        return workspace_data["pkgs"][pkg_name]
-    return {"error": "Package not found"}
-
-def list_packages(req: dict):
-    """パッケージ名のリストを取得"""
-    return {"packages": list(workspace_data["pkgs"].keys())}

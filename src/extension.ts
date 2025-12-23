@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as path from "path";
 import { spawn } from "child_process";
 import { logInfo, logWarn, logError, showLogChannel } from './logger';
-import { WorkspaceResponse, WorkspaceInfo, PackageInfo } from "./ws_info";
+import { WorkspaceResponse } from "./ws_info";
 
 //JSON-RPCっていうらしい
 //サブプロセスとしてpythonを起動
@@ -12,18 +12,6 @@ import { WorkspaceResponse, WorkspaceInfo, PackageInfo } from "./ws_info";
 type ResponseHandler = (res: any) => void;
 const pending = new Map<number, ResponseHandler>();
 let LatestID = 0;
-
-let currentWorkspace: WorkspaceInfo | null = null;
-
-function getCurrentWorkspace(): WorkspaceInfo | null {
-	return currentWorkspace;
-}
-
-// パッケージ情報を取得するヘルパー関数
-function getPackageInfo(pkgName: string): PackageInfo | null {
-	if (!currentWorkspace) return null;
-	return currentWorkspace.pkgs[pkgName] || null;
-}
 
 function handleMessage(msg: any) {
 	switch (msg.type) {
@@ -110,7 +98,7 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		);
 	});
 
-	const load_ws = vscode.commands.registerCommand('ros2helper.loadWorkspace', () => {
+	const load_ws = vscode.commands.registerCommand('ros2helper.loadWorkspace', () => {//ワークスペースの読み込みをするコマンド
 		logInfo('Load WS コマンドが実行されました', 'command');
 		const ws = vscode.workspace.workspaceFolders?.[0];
 		if (!ws) {
@@ -120,18 +108,20 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 
 		send({ cmd: "load_ws", path: ws.uri.fsPath },
 			(res: WorkspaceResponse) => {
+				logInfo("reload成功", "python callback");
+			}
+		);
+	});
 
-				//ワークスペース情報を保存
-				currentWorkspace = {
-					path: ws.uri.fsPath,
-					pkgs: res.pkgs
-				};
-				//以下ログ表示 
-				const pkgCount = Object.keys(currentWorkspace.pkgs).length;
+	const show_ws_info = vscode.commands.registerCommand('ros2helper.showWSinfo', () => {//現在のワークスペス情報を表示するコマンド
+		logInfo('showWorkSpaceInfo コマンドが実行されました', 'command');
+		send({ cmd: 'get_ws_info' },
+			(res: WorkspaceResponse) => {
+				const pkgCount = Object.keys(res.pkgs).length;
 				logInfo(`Loaded ${pkgCount} packages`, "python callback");
 
 				// 各パッケージの詳細情報をログ出力
-				for (const [pkgName, pkgInfo] of Object.entries(currentWorkspace.pkgs)) {
+				for (const [pkgName, pkgInfo] of Object.entries(res.pkgs)) {
 					logInfo(`Package: ${pkgName}`, "python callback");
 					logInfo(`  Path: ${pkgInfo.path}`, "python callback");
 
@@ -144,11 +134,12 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 					}
 				}
 			}
-		);
+		)
 	});
 
 	context.subscriptions.push(test_command);
 	context.subscriptions.push(load_ws);
+	context.subscriptions.push(show_ws_info);
 }
 
 export function deactivate() {
