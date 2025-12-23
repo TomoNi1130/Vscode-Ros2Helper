@@ -36,10 +36,10 @@ function handleMessage(msg: any) {
 export function activate(context: vscode.ExtensionContext) {//主要なエントリポイント
 	//すべての拡張機能のセットアップ、コマンド登録、イベントリスナーの購読はここでの実行。
 
-	const pyPath = path.join(//pythonファイルの場所を指定する
+	const pyPath = path.join(//pythonのエントリー
 		context.extensionPath,
 		"python_file",
-		"readup_ws.py"
+		"main.py"
 	);
 
 	const py = spawn("python3", [pyPath]);
