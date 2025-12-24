@@ -1,7 +1,7 @@
 from readup_ws import readup_ws
 from load_ws import load_ws
 from ws_info import get_workspace
-from node_tester import process_manager
+from launch_processes import process_manager
 
 COMMAND_TABLE = {
     "list_dirs": readup_ws,

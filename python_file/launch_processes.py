@@ -19,8 +19,8 @@ class ProcessManager:
         """
         source_path = Path(source_path).resolve()
 
-        print("ROS_DISTRO =", os.environ.get("ROS_DISTRO"), file=sys.stderr)
-        print("AMENT_PREFIX_PATH =", os.environ.get("AMENT_PREFIX_PATH"),file=sys.stderr)
+        # print("ROS_DISTRO =", os.environ.get("ROS_DISTRO"), file=sys.stderr)
+        # print("AMENT_PREFIX_PATH =", os.environ.get("AMENT_PREFIX_PATH"),file=sys.stderr)
         
         for pkg_name, pkg_info in load_ws.workspace_data["pkgs"].items():
             pkg_path = Path(pkg_info["path"])
