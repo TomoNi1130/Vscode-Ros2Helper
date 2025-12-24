@@ -26,6 +26,14 @@
       {
         "command": "ros2helper.showWSinfo",
         "title": "ROS2: Show WorkSpace Info"
+      },
+      {
+        "command": "ros2helper.refleshEnv",
+        "title": "ROS2: Reflesh Env"
+      },
+      {
+        "command": "ros2helper.runNode",
+        "title": "ROS2: Run Node"
       }
     ],
     "menus": {
@@ -34,6 +42,11 @@
           "command": "ros2helper.testCommand",
           "when": "resourceFilename =~ /\\.launch\\.(py|xml|yml)$/",
           "group": "ros2@1"
+        },
+        {
+          "command": "ros2helper.runNode",
+          "when": "resourceExtname == .cpp",
+          "group": "ros2@2"
         }
       ]
     }

@@ -1,6 +1,8 @@
 import subprocess
 from typing import Dict, Optional, Tuple
 from pathlib import Path
+import os
+import sys
 import load_ws
 
 class ProcessManager:
@@ -16,6 +18,9 @@ class ProcessManager:
         Returns: (package_name, node_name) or None
         """
         source_path = Path(source_path).resolve()
+
+        print("ROS_DISTRO =", os.environ.get("ROS_DISTRO"), file=sys.stderr)
+        print("AMENT_PREFIX_PATH =", os.environ.get("AMENT_PREFIX_PATH"),file=sys.stderr)
         
         for pkg_name, pkg_info in load_ws.workspace_data["pkgs"].items():
             pkg_path = Path(pkg_info["path"])
@@ -29,7 +34,7 @@ class ProcessManager:
             # このパッケージ内のノードを検索
             for node_name, node_info in pkg_info["nodes"].items():
                 for src in node_info["sources"]:
-                    src_full_path = (pkg_path / src).resolve()
+                    src_full_path = (pkg_path / src).resolve()#ノードのソースの保存情報はsrc/*のみ
                     if src_full_path == source_path:
                         return (pkg_name, node_name)
         

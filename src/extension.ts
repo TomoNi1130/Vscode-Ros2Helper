@@ -26,7 +26,7 @@ function handleMessage(msg: any) {
 			logInfo("event", "python callback");
 			break;
 		case "error":
-			logError("error", "python callback");
+			logError(`${msg.data}`, "python callback");
 			break;
 		default:
 			logError("Unknown message", "python callback");
@@ -42,9 +42,26 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		"main.py"
 	);
 
-	const py = spawn("python3", [pyPath]);
+	const distro = process.env.ROS_DISTRO ?? "jazzy";
+
+	const ws = vscode.workspace.workspaceFolders?.[0];
+	if (!ws) {
+		logError("No workspace open", "extension");
+		return;
+	}
+
+	const installSetup = path.join(ws.uri.fsPath, "install", "setup.bash");
+
+	const command =
+		`source /opt/ros/${distro}/setup.bash && ` +
+		`source "${installSetup}" && ` +
+		`python3 "${pyPath}"`;
+	// const command = `source /opt/ros/${distro}/setup.bash &&source ~/ros2_ws/install/setup.bash &&python3 "${pyPath}"`;
+
+	const py = spawn("bash", ["-c", command], { stdio: ["pipe", "pipe", "pipe"], });
+
 	let buffer: string = "";
-	if (py.stdout) {
+	if (py.stdout && py.stderr) {
 		py.stdout.on("data", (data) => {
 			buffer += data.toString();
 			const lines = buffer.split("\n");
@@ -54,6 +71,9 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 				const msg = JSON.parse(line);
 				handleMessage(msg);
 			}
+		});
+		py.stderr.on("data", (data) => {
+			console.error("[PYTHON]", data.toString());
 		});
 	} else {
 		logError('Failed to start Python process: stdout is null', 'extension');
@@ -142,14 +162,35 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		)
 	});
 
-	const run_node = vscode.commands.registerCommand('ros2helper.runNode', (uri: vscode.Uri) => {
+	const reflesh_env = vscode.commands.registerCommand('ros2helper.refleshEnv', () => {
+		logInfo('refleshコマンドを実行されました', 'command');
+		send({ cmd: "refresh_environment" },
+			(res) => {
+				logInfo('refleshコマンドを完了', 'python callback');
+			}
+		)
+	});
+
+	const runNode = vscode.commands.registerCommand('ros2helper.runNode', (uri: vscode.Uri) => {
 		const filePath = uri.fsPath;
-		const fileName = uri.path.split('/').pop();
+		logInfo(`Starting node from: ${filePath}`, 'command');
+
+		send({ cmd: "start_node_from_source", source_path: filePath },
+			(res) => {
+				if (res.success) {
+					logInfo(`Started ${res.executable} from ${res.package} (PID: ${res.pid})`, "python callback");
+				} else {
+					logError(`Failed to start node: ${res.error}`, "python callback");
+				}
+			},
+		);
 	});
 
 	context.subscriptions.push(test_command);
 	context.subscriptions.push(load_ws);
 	context.subscriptions.push(show_ws_info);
+	context.subscriptions.push(reflesh_env);
+	context.subscriptions.push(runNode);
 }
 
 export function deactivate() {
