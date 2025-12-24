@@ -191,6 +191,9 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 	context.subscriptions.push(show_ws_info);
 	context.subscriptions.push(reflesh_env);
 	context.subscriptions.push(runNode);
+
+	vscode.commands.executeCommand('ros2helper.loadWorkspace');
+	vscode.commands.executeCommand('ros2helper.showWSinfo');
 }
 
 export function deactivate() {
