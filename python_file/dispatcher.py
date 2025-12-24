@@ -1,10 +1,9 @@
-from readup_ws import readup_ws
+
 from load_ws import load_ws
 from ws_info import get_workspace
 from launch_processes import process_manager
 
 COMMAND_TABLE = {
-    "list_dirs": readup_ws,
     "load_ws": load_ws,
     "get_ws_info": get_workspace,
     "start_node": process_manager.start_node,

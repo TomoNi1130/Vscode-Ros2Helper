@@ -104,20 +104,6 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		}
 	}
 
-	const test_command = vscode.commands.registerCommand('ros2helper.testCommand', () => {
-		logInfo('Hello World コマンドが実行されました.', 'command');
-		vscode.window.showInformationMessage('Hello World from ros2-helper!');//右下から出てくる.
-		const ws = vscode.workspace.workspaceFolders?.[0];
-		if (!ws) {
-			logError("No workspace open", 'test command');
-			return;
-		}
-		//pythonへの処理要求 例としてlist_dirsコマンド
-		send({ cmd: "list_dirs", path: ws.uri.fsPath },
-			(res) => { logInfo("Folders: " + res.dirs.join(", "), "python callback"); }
-		);
-	});
-
 	const load_ws = vscode.commands.registerCommand('ros2helper.loadWorkspace', () => {//ワークスペースの読み込みをするコマンド
 		logInfo('Load WS コマンドが実行されました', 'command');
 		const ws = vscode.workspace.workspaceFolders?.[0];
@@ -186,7 +172,6 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		);
 	});
 
-	context.subscriptions.push(test_command);
 	context.subscriptions.push(load_ws);
 	context.subscriptions.push(show_ws_info);
 	context.subscriptions.push(reflesh_env);

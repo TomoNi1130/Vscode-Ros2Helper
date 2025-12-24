@@ -16,10 +16,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "ros2helper.testCommand",
-        "title": "ROS2: Hello World"
-      },
-      {
         "command": "ros2helper.loadWorkspace",
         "title": "ROS2: ReLoad WorkSpace"
       },
@@ -39,14 +35,9 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "ros2helper.testCommand",
-          "when": "resourceFilename =~ /\\.launch\\.(py|xml|yml)$/",
-          "group": "ros2@1"
-        },
-        {
           "command": "ros2helper.runNode",
           "when": "resourceExtname == .cpp",
-          "group": "ros2@2"
+          "group": "ros2@1"
         }
       ]
     }
