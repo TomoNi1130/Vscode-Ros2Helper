@@ -1,8 +1,6 @@
 import subprocess
 from typing import Dict, Optional, Tuple
 from pathlib import Path
-import os
-import sys
 import load_ws
 
 class ProcessManager:
@@ -18,9 +16,6 @@ class ProcessManager:
         Returns: (package_name, node_name) or None
         """
         source_path = Path(source_path).resolve()
-
-        # print("ROS_DISTRO =", os.environ.get("ROS_DISTRO"), file=sys.stderr)
-        # print("AMENT_PREFIX_PATH =", os.environ.get("AMENT_PREFIX_PATH"),file=sys.stderr)
         
         for pkg_name, pkg_info in load_ws.workspace_data["pkgs"].items():
             pkg_path = Path(pkg_info["path"])
@@ -74,8 +69,9 @@ class ProcessManager:
         if not package or not executable:
             return {"success": False, "error": "package and executable are required"}
         
-        cmd = ["ros2", "run", package, executable]
-        
+        #別ウィンドウを開きノードを起動
+        cmd = ["gnome-terminal","--","bash","-c",f"ros2 run {package} {executable}; exec bash"]
+
         try:
             proc = subprocess.Popen(
                 cmd,
