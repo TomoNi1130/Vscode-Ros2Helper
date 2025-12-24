@@ -41,21 +41,55 @@ def load_ws(req: dict):
             pkg_name = pkg_dir.name
         
         # CMakeLists.txtからノード情報を取得
-        nodes = []
+        nodes = {}  # ノード名をキー、ソースファイルのリストを値とする辞書に変更
         cmake_file = pkg_dir / "CMakeLists.txt"
         if cmake_file.exists():
             try:
                 cmake_content = cmake_file.read_text()
                 
-                # add_executable()からノード名を抽出
-                executable_pattern = r'add_executable\s*\(\s*(\w+)'
-                executables = re.findall(executable_pattern, cmake_content)
-                nodes.extend(executables)
+                # add_executable()からノード名とソースファイルを抽出
+                # 例: add_executable(node_name src/node.cpp src/utils.cpp)
+                executable_pattern = r'add_executable\s*\(\s*(\w+)\s+((?:[^\)]+))\)'
+                for match in re.finditer(executable_pattern, cmake_content, re.MULTILINE | re.DOTALL):
+                    node_name = match.group(1)
+                    sources_str = match.group(2)
+                    
+                    # ソースファイルのパスを抽出（.cpp, .cc, .cxxファイル）
+                    source_files = re.findall(r'[\w/.]+\.(?:cpp|cc|cxx)', sources_str)
+                    
+                    if source_files:
+                        nodes[node_name] = {
+                            "type": "executable",
+                            "sources": source_files
+                        }
                 
                 # rclcpp_components_register_node()からも抽出
-                component_pattern = r'rclcpp_components_register_node\s*\(\s*\w+\s+PLUGIN\s+"[^"]*::(\w+)"'
+                # この場合、対応するソースファイルはadd_library()から推測
+                component_pattern = r'rclcpp_components_register_node\s*\(\s*(\w+)\s+PLUGIN\s+"[^"]*::(\w+)"'
                 components = re.findall(component_pattern, cmake_content)
-                nodes.extend(components)
+                
+                # ライブラリ名とソースファイルのマッピングを作成
+                library_sources = {}
+                library_pattern = r'add_library\s*\(\s*(\w+)\s+((?:[^\)]+))\)'
+                for match in re.finditer(library_pattern, cmake_content, re.MULTILINE | re.DOTALL):
+                    lib_name = match.group(1)
+                    sources_str = match.group(2)
+                    source_files = re.findall(r'[\w/.]+\.(?:cpp|cc|cxx)', sources_str)
+                    if source_files:
+                        library_sources[lib_name] = source_files
+                
+                # コンポーネントノードをマッピング
+                for lib_name, class_name in components:
+                    if lib_name in library_sources:
+                        nodes[class_name] = {
+                            "type": "component",
+                            "sources": library_sources[lib_name]
+                        }
+                    else:
+                        nodes[class_name] = {
+                            "type": "component",
+                            "sources": []
+                        }
                 
             except Exception as e:
                 print(f"Error reading CMakeLists.txt in {pkg_dir}: {e}")
@@ -70,7 +104,7 @@ def load_ws(req: dict):
         # パッケージ情報を保存（Python側）
         workspace_data["pkgs"][pkg_name] = {
             "path": str(pkg_dir),
-            "nodes": nodes,
+            "nodes": nodes,  # 辞書形式に変更
             "launch_files": launch_files,
         }
     

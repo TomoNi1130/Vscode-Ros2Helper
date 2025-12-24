@@ -125,16 +125,26 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 					logInfo(`Package: ${pkgName}`, "python callback");
 					logInfo(`  Path: ${pkgInfo.path}`, "python callback");
 
-					if (pkgInfo.nodes.length > 0) {
-						logInfo(`  Nodes: ${pkgInfo.nodes.join(", ")}`, "python callback");
+					if (Object.keys(pkgInfo.nodes).length > 0) {
+						logInfo(`  Nodes:`, "python callback");
+						Object.entries(pkgInfo.nodes).forEach(([nodeName, nodeInfo]) => {
+							const sourceList = nodeInfo.sources.length > 0
+								? nodeInfo.sources.join(", ")
+								: "no sources";
+							logInfo(`    - ${nodeName} (${nodeInfo.type}): ${sourceList}`, "python callback");
+						});
 					}
-
 					if (pkgInfo.launch_files.length > 0) {
 						logInfo(`  Launch files: ${pkgInfo.launch_files.join(", ")}`, "python callback");
 					}
 				}
 			}
 		)
+	});
+
+	const run_node = vscode.commands.registerCommand('ros2helper.runNode', (uri: vscode.Uri) => {
+		const filePath = uri.fsPath;
+		const fileName = uri.path.split('/').pop();
 	});
 
 	context.subscriptions.push(test_command);

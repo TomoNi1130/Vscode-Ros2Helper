@@ -1,6 +1,11 @@
+export type NodeInfo = {
+    type: "executable" | "component";
+    sources: string[];
+};
+
 export interface PackageInfo {
     path: string;
-    nodes: string[];
+    nodes: Record<string, NodeInfo>;
     launch_files: string[];
 }
 
