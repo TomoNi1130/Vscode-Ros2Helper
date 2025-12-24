@@ -6,7 +6,6 @@ import { spawn } from "child_process";
 import { logInfo, logWarn, logError, showLogChannel } from './logger';
 import { WorkspaceResponse } from "./ws_info";
 
-//JSON-RPCっていうらしい
 //サブプロセスとしてpythonを起動
 
 type ResponseHandler = (res: any) => void;
