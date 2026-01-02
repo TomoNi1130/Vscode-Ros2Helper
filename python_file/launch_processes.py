@@ -35,6 +35,30 @@ class ProcessManager:
         
         return None
     
+    def find_launch_by_source(self, source_path: str) -> Optional[Tuple[str, str]]:
+        """
+        launchファイルのパスからパッケージ名とlaunchファイル名を特定
+        Returns: (package_name, launch_file_name) or None
+        """
+        source_path = Path(source_path).resolve()
+    
+        for pkg_name, pkg_info in load_ws.workspace_data["pkgs"].items():
+            pkg_path = Path(pkg_info["path"])
+
+            # launchファイルがこのパッケージ内にあるか確認
+            try:
+                source_path.relative_to(pkg_path)
+            except ValueError:
+                continue
+            
+            # このパッケージ内のlaunchファイルを検索
+            for launch_file_name in pkg_info["launch_files"]:
+                launch_full_path = (pkg_path / "launch" / launch_file_name).resolve()
+                if launch_full_path == source_path:
+                    return (pkg_name, launch_file_name)
+    
+        return None
+    
     def start_node_from_source(self, req: dict) -> dict:
         """
         ソースファイルのパスからノードを起動
@@ -48,11 +72,11 @@ class ProcessManager:
         if not result:
             return {"success": False, "error": f"Could not find node for source: {source_path}"}
         
-        package, node_name = result
+        package, executable = result
         
         return self.start_node({
             "package": package,
-            "executable": node_name
+            "executable": executable
         })
     
     def start_node(self, req: dict) -> dict:
@@ -70,7 +94,7 @@ class ProcessManager:
             return {"success": False, "error": "package and executable are required"}
         
         #別ウィンドウを開きノードを起動
-        cmd = ["gnome-terminal","--","bash","-c",f"ros2 run {package} {executable}; exec bash"]
+        cmd = ["gnome-terminal","--","bash","-c",f"ros2 run {package} {executable}"]
 
         try:
             proc = subprocess.Popen(
@@ -90,24 +114,42 @@ class ProcessManager:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
-    def start_launch(self, req: dict) -> dict:
+    def start_launch_file(self, req: dict) -> dict:
         """
         Launchファイルを起動
-        req: {"package": "pkg_name", "launch_file": "example.launch.py", "args": [...]}
+        req: {"source_path": "/path/to/launch/sample.launch.py"}
         """
         proc_id = f"launch_{self.next_id}"
         self.next_id += 1
         
-        package = req.get("package")
-        launch_file = req.get("launch_file")
-        args = req.get("args", [])
+        source_path = req.get("source_path")
+        if not source_path:
+            return {"success": False, "error": "source_path is required"}
+        
+        result = self.find_launch_by_source(source_path)
+        if not result:
+            return {"success": False, "error": f"Could not find launch file for source: {source_path}"}
+        
+        package, launch_file = result
         
         if not package or not launch_file:
             return {"success": False, "error": "package and launch_file are required"}
         
-        cmd = ["ros2", "launch", package, launch_file]
-        if args:
-            cmd.extend(args)
+        # ワークスペースのパスを取得
+        workspace_path = load_ws.workspace_data.get("path")
+        if not workspace_path:
+            return {"success": False, "error": "Workspace path not found"}
+        
+        # launchファイルのフルパスを取得
+        launch_file_path = Path(source_path).resolve()
+        
+        # install/setup.bashをsourceしてからlaunchファイルのフルパスで実行
+        # exec bashを削除してlaunch終了時にターミナルも閉じる
+        setup_script = f"{workspace_path}/install/setup.bash"
+        cmd = [
+            "gnome-terminal", "--", "bash", "-c",
+            f"source {setup_script} && ros2 launch {launch_file_path}"
+        ]
         
         try:
             proc = subprocess.Popen(

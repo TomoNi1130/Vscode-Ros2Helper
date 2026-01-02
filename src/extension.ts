@@ -156,7 +156,7 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		)
 	});
 
-	const runNode = vscode.commands.registerCommand('ros2helper.runNode', (uri: vscode.Uri) => {
+	const runNode = vscode.commands.registerCommand('ros2helper.runNode', (uri: vscode.Uri) => {//選択されたファイルに関連したノードを起動する
 		const filePath = uri.fsPath;
 		logInfo(`Starting node from: ${filePath}`, 'command');
 
@@ -171,10 +171,26 @@ export function activate(context: vscode.ExtensionContext) {//主要なエント
 		);
 	});
 
+	const launchfile = vscode.commands.registerCommand('ros2helper.launchFile', (uri: vscode.Uri) => {
+		const filePath = uri.fsPath;
+		logInfo(`Launch file from: ${filePath}`, 'command');
+
+		send({ cmd: "start_launch", source_path: filePath },
+			(res) => {
+				if (res.success) {
+					logInfo(`Started ${res.launch_file} from ${res.package} (PID: ${res.pid})`, "python callback");
+				} else {
+					logInfo(`Failed to launch file: ${res.error}`, "python callback");
+				}
+			},
+		);
+	});
+
 	context.subscriptions.push(load_ws);
 	context.subscriptions.push(show_ws_info);
 	context.subscriptions.push(reflesh_env);
 	context.subscriptions.push(runNode);
+	context.subscriptions.push(launchfile);
 
 	vscode.commands.executeCommand('ros2helper.loadWorkspace');
 	vscode.commands.executeCommand('ros2helper.showWSinfo');

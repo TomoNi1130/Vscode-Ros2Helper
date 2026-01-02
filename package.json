@@ -30,6 +30,10 @@
       {
         "command": "ros2helper.runNode",
         "title": "ROS2: Run Node"
+      },
+      {
+        "command": "ros2helper.launchFile",
+        "title": "ROS2: Launch File"
       }
     ],
     "menus": {
@@ -38,6 +42,11 @@
           "command": "ros2helper.runNode",
           "when": "resourceExtname == .cpp",
           "group": "ros2@1"
+        },
+        {
+          "command": "ros2helper.launchFile",
+          "when": "resourceFilename =~ /\\.launch\\.(py|xml|yml)$/",
+          "group": "ros2@2"
         }
       ]
     }

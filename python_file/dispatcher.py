@@ -8,7 +8,7 @@ COMMAND_TABLE = {
     "get_ws_info": get_workspace,
     "start_node": process_manager.start_node,
     "start_node_from_source": process_manager.start_node_from_source,
-    "start_launch": process_manager.start_launch,
+    "start_launch": process_manager.start_launch_file,
     "stop_process": process_manager.stop_process,
     "list_processes": process_manager.list_processes,
 }
