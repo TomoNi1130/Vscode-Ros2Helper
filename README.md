@@ -1,77 +1,149 @@
-# ros2helper README
+# ROS2 Helper
 
-This is the README for your extension "ros2helper". After writing up a brief description, we recommend including the following sections.
+## 説明
 
-1,ノード用のファイルを選択し,エクスプローラーからそのノードをビルド,実行することができる.
-2,1をパッケージ単位でも行うことができる.
-3,launchファイルを選択し,エクスプローラーからそのファイルを実行することができる
-4,コマンドラインの予測変換で現在ワークスペース内にあるノードやlaunchファイルの名前が予測変換で出てくる.
-5,上記のノードやlaunchファイルの実行の際には自動的にコマンドラインが開き,終了すると自動的に閉じるようにしたい.
+ROS2 Helperは,VS CodeでROS2開発を行う際の効率を大幅に向上させるためのVScodeの拡張機能です.ROS2を使ったロボット開発では,複数のパッケージやノード,launchファイルを管理する必要があります.開発中は,それらを実行するためにターミナルで何度もコマンドを入力することが多く,開発の流れが中断されがちです.この拡張機能は,そうした煩雑な作業を自動化し,開発者がコーディングに集中できる環境を提供します.
 
-## Features
+本拡張機能の主な特徴は,ワークスペース内のすべてのパッケージ情報を自動的に解析し,CMakeLists.txtから実行可能ノードやコンポーネントノードを検出する点です.これにより,開発者はパッケージ構成を手動で把握する必要がなくなります.また,C++やPythonで記述されたノードのソースファイルを右クリックするだけで,対応するROS2ノードを新しいターミナルウィンドウで起動できます.従来のように ros2 run コマンドを入力する手間が省け,開発とテストのサイクルを高速化できます.
+試験的にノードを実行したい場合にも役立つでしょう.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+さらに,launchファイルの実行も簡単になります. .launch.pyファイルを右クリックして選択するだけで,適切な環境設定（setup.bashのsource）が自動的に行われ,launchファイルが実行されます.これにより,開発途中のlaunchファイルによるトライアンドエラーがより高速に回すことができます.
 
-For example if there is an image subfolder under your extension project workspace:
+本拡張機能はTypeScriptで記述されたVS Code側のインターフェースと,Pythonで記述されたROS2ワークスペース解析エンジンから構成されており,両者間はJSON-RPC形式で通信しています.
 
-\!\[feature X\]\(images/feature-x.png\)
+本拡張機能により,ROS2開発者は煩雑なコマンド操作や,スペルミスから解放され,ロボット開発により多くの時間と思考を割くことができます.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## 機能
 
-## Requirements
+### 📦 ワークスペースの自動解析
+起動時にROS2ワークスペースを自動的に解析し,以下を検出します：
+- 実行可能ノード（CMakeLists.txtの`add_executable()`から）
+- コンポーネントノード（`rclcpp_components_register_node()`から）
+- 各パッケージの`launch/`ディレクトリ内のlaunchファイル
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+### 🚀 ノードの実行
+C++やPythonのソースファイルを右クリックして **Run ROS2 Node** を選択すると,対応するROS2ノードが新しいターミナルウィンドウで起動します.
+![ノードの実行メニュー](images/Screenshot%20from%202026-01-04%2015-17-35.png)
+![ノードの実行メニュー](images/Screenshot%20from%202026-01-04%2015-37-13.png)
 
-## Extension Settings
+### 🎯 Launchファイルの実行
+`.launch.py`ファイルを右クリックして**「Launch ROS2 File」**を選択すると,適切な環境設定で直接実行されます.
+![launchファイルの実行メニュー](images/Screenshot%20from%202026-01-04%2015-23-13.png)
+![launchファイルの実行メニュー](images/Screenshot%20from%202026-01-04%2015-34-52.png)
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### 📊 ワークスペース情報の表示
+検出されたパッケージ,ノード,launchファイルの詳細情報をデバッグコンソールで確認できます。
 
-For example:
+## スクリーンショット
 
-This extension contributes the following settings:
+### ワークスペースの読み込みと情報表示
+![ワークスペース情報](images/Screenshot%20from%202026-01-04%2015-28-03.png)
+*拡張機能が起動すると自動的にワークスペースを解析し,検出されたパッケージ情報をデバックコンソールに表示します**
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## 動作要件
 
-## Known Issues
+- **ROS2ディストリビューション**: Jazzy、Humbleなど対応バージョン
+- **環境**: `gnome-terminal`がインストールされたLinux
+- **ワークスペース**: `install/setup.bash`を含む、ビルド済みのROS2ワークスペース
+- **環境変数**: `ROS_DISTRO`が設定されていること（例: `jazzy`, `humble`）
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+### セットアップ
+拡張機能を使用する前に,ワークスペースをビルドしてください：
+```bash
+cd ~/your_ros2_workspace
+colcon build
+```
 
-## Release Notes
+## 使い方
 
-Users appreciate release notes as you update your extension.
+### ノードの実行
+1. ノードのソースファイル（`.cpp`, `.cc`, `.cxx`, `.py`）を開く
+2. エクスプローラーでファイルを右クリック
+3. コンテキストメニューから**「Run ROS2 Node」**を選択
+4. 新しいターミナルウィンドウでノードが起動します
 
-### 1.0.0
+### Launchファイルの実行
+1. launchファイル（`.launch.py`, `.launch.xml`など）を開く
+2. エクスプローラーでファイルを右クリック
+3. コンテキストメニューから**「Launch ROS2 File」**を選択
+4. 適切な環境設定でlaunchファイルが実行されます
 
-Initial release of ...
+### コマンドパレット
+コマンドパレット（`Ctrl+Shift+P`）から以下のコマンドにアクセスできます：
 
-### 1.0.1
+- `ROS2 Helper: Load Workspace` - ワークスペース情報を再読み込み
+- `ROS2 Helper: Show Workspace Info` - パッケージの詳細を出力パネルに表示
+- `ROS2 Helper: Refresh Environment` - ROS2環境変数を更新
 
-Fixed issue #.
+## 技術詳細
 
-### 1.1.0
+### アーキテクチャ
+この拡張機能は以下で構成されています：
 
-Added features X, Y, and Z.
+- **TypeScript拡張**（`extension.ts`） - VS Code統合とコマンド処理
+- **Pythonバックエンド**（`python_file/`） - ROS2ワークスペース解析とプロセス管理
+
+拡張機能はPythonのサブプロセスを起動し、ROS2環境とインターフェースしてワークスペース情報を提供し、ノードプロセスを管理します。
+
+### 使用技術
+- **言語**: TypeScript, Python
+- **フレームワーク**: VS Code Extension API
+- **通信**: JSON-RPC（標準入出力経由）
+- **プロセス管理**: Node.js child_process, Python subprocess
+
+### ファイル構成
+```
+ros2helper/
+├── src/
+│   ├── extension.ts          # メインの拡張機能ロジック
+│   ├── logger.ts             # ログ出力ユーティリティ
+│   └── ws_info.ts            # 型定義
+├── python_file/
+│   ├── main.py               # Pythonエントリーポイント
+│   ├── dispatcher.py         # コマンドディスパッチャ
+│   ├── load_ws.py            # ワークスペース解析
+│   ├── ws_info.py            # ワークスペース情報取得
+│   └── launch_processes.py  # プロセス管理
+└── package.json              # 拡張機能マニフェスト
+```
+
+## トラブルシューティング
+
+### ノードが検出されない場合
+- パッケージに`package.xml`と`CMakeLists.txt`が存在することを確認
+- ワークスペースがビルドされていることを確認: `colcon build`
+- **「ROS2 Helper: Load Workspace」**を実行して更新
+
+### ノードの起動に失敗する場合
+- ワークスペースのルートに`install/setup.bash`が存在することを確認
+- `ROS_DISTRO`環境変数が設定されていることを確認
+- 出力パネルでエラーメッセージを確認
+
+### 異なるターミナルエミュレータを使用したい場合
+- この拡張機能はデフォルトで`gnome-terminal`を使用します
+- 他のターミナルを使用する場合は、`launch_processes.py`の起動コマンドを修正してください
+
+## 既知の問題
+
+- 現在、`gnome-terminal`を使用するLinux環境のみサポート
+- ノード検出にはワークスペースがビルド済みである必要があります
+- コンポーネントノードはCMakeLists.txtに適切に登録されている必要があります
+
+## 今後の改善予定
+
+- ワークスペース情報のGUI表示
+- Windows/macOS対応
+- 他のターミナルエミュレータのサポート
+- ノードの停止機能の追加
+- 実行中のノード一覧表示
+
+## 制作時期
+2025年12月～2026年1月
+
+## ライセンス
+
+MIT License
 
 ---
 
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+**より快適なROS2開発をお楽しみください！**

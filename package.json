@@ -3,6 +3,10 @@
   "displayName": "ros2-helper",
   "description": "Tools to aid in ROS2 development",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TomoNi1130/Vscode-Ros2Helper"
+  },
   "engines": {
     "vscode": "^1.106.1"
   },
